@@ -5,6 +5,10 @@ import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model'
 import { ArcMetadata, EpisodeMetadata } from '../metadata/metadata.model.js'
+import {
+	getMuhnPaceCrc32,
+	hasMuhnPaceEntry,
+} from '../metadata/muhn-pace-metadata.js'
 import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
@@ -256,8 +260,16 @@ export class PipelineController {
 				return 'Download queued'
 			case 'already_present':
 				return 'Torrent already in client'
+			case 'already_staged':
+				return 'Complete in staging'
 			case 'skipped':
 				return 'Download skipped'
+			case 'source_missing':
+				return 'Muhn source missing'
+			case 'crc_mismatch':
+				return 'Muhn CRC mismatch'
+			case 'download_failed':
+				return 'Muhn download failed'
 		}
 	}
 
@@ -357,6 +369,94 @@ export class PipelineController {
 		}
 	}
 
+	private async processMuhnPaceEpisode(
+		arc: number,
+		me: EpisodeMetadata,
+	): Promise<boolean> {
+		const episodeNum = me.episode
+
+		if (
+			!environment.PREFER_MUHN_PACE ||
+			!hasMuhnPaceEntry(Context.metadata.getMetadata(), arc, episodeNum)
+		) {
+			return false
+		}
+
+		const muhnSourceMissing =
+			!!Context.muhnPace && !Context.muhnPace.hasSource(arc, episodeNum)
+		if (environment.MUHN_PACE_FALLBACK_TO_ONE_PACE && muhnSourceMissing) {
+			return false
+		}
+
+		const label = `S${arc}E${String(episodeNum).padStart(2, '0')}`
+		const expectedCrc = getMuhnPaceCrc32(
+			Context.metadata.getMetadata(),
+			arc,
+			episodeNum,
+		)
+		const _episode = await Context.metadata.getEpisode(arc, episodeNum)
+		const muhnFile =
+			await Context.library.getExistingLibraryEpisodeFile(_episode)
+
+		if (muhnFile) {
+			if (this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES) {
+				Logger.debug(
+					`${label} - [Muhn Pace] Exists on Media Server (Verification skipped)...`,
+				)
+				if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+					await this.organizeFile(arc, episodeNum)
+				} else if (
+					!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+				) {
+					await this.updatemetadata(arc, episodeNum)
+				}
+				return true
+			}
+
+			Logger.debug(`${label} - [Muhn Pace] Exists on Media Server (Verifying)`)
+			const muhnCrc = await getFileCrc32Hash(muhnFile)
+			if (muhnCrc === expectedCrc) {
+				Logger.info(`${label} - [Muhn Pace] Already present`)
+				if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+					await this.organizeFile(arc, episodeNum)
+				} else if (
+					!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+				) {
+					await this.updatemetadata(arc, episodeNum)
+				}
+				return true
+			}
+
+			if (this.config.PIPELINE_SKIP_DOWNLOADS) {
+				Logger.info(
+					`${label} - [Muhn Pace] CRC32 Mismatch [Download skipped]`,
+				)
+			} else {
+				const queueResult = await Context.muhnPace!.queueDownload(
+					arc,
+					episodeNum,
+				)
+				Logger.info(
+					`${label} - [Muhn Pace] CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
+				)
+			}
+			return true
+		}
+
+		if (this.config.PIPELINE_SKIP_DOWNLOADS) {
+			Logger.info(`${label} - [Muhn Pace] Missing [Download skipped]`)
+		} else {
+			const queueResult = await Context.muhnPace!.queueDownload(
+				arc,
+				episodeNum,
+			)
+			Logger.info(
+				`${label} - [Muhn Pace] Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
+			)
+		}
+		return true
+	}
+
 	private async process(
 		ma: ArcMetadata,
 		me: EpisodeMetadata,
@@ -366,6 +466,10 @@ export class PipelineController {
 		Logger.debug(
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Processing`,
 		)
+
+		if (await this.processMuhnPaceEpisode(ma.arc, me)) {
+			return
+		}
 
 		const skipVerification =
 			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&

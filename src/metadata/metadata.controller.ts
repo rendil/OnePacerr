@@ -15,6 +15,7 @@ import {
 	Metadata,
 	MetadataAbsentError,
 } from './metadata.model.js'
+import { getEpisodeFromMuhnCrc32 } from './muhn-pace-metadata.js'
 
 export class MetadataController {
 	private metadata: Metadata
@@ -154,6 +155,12 @@ export class MetadataController {
 		return structuredClone(this.metadata)
 	}
 
+	getMetadata(): Metadata {
+		this.checkMetadataDownloaded()
+
+		return this.metadata
+	}
+
 	findCRC32(arc: number, episode: number): string {
 		this.checkMetadataDownloaded()
 
@@ -170,6 +177,16 @@ export class MetadataController {
 
 	findEpisodeByCRC32(CRC32: string): EpisodeMetadata | undefined {
 		this.checkMetadataDownloaded()
+
+		if (environment.PREFER_MUHN_PACE) {
+			const muhnEpisode = getEpisodeFromMuhnCrc32(this.metadata, CRC32)
+			if (muhnEpisode) {
+				const full = structuredClone(this.metadata)
+					.arcs.find(a => a.arc == muhnEpisode.arc)
+					?.episodes.find(e => e.episode == muhnEpisode.episode)
+				if (full) return full
+			}
+		}
 
 		let _found = structuredClone(this.metadata).arcs.find(a => {
 			const _found = a.episodes.find(

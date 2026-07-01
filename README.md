@@ -331,6 +331,20 @@ Here is a breakdown of key optional variables you can adjust in your
 | `PIPELINE_FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
 | `PIPELINE_RETRY_INTERVAL` | 10 | Seconds to wait before re-running pipeline after failures. |
 
+### 🥟 Muhn Pace
+
+Muhn Pace fills One Pace dub gaps that have no RSS/torrent feed by downloading verified `.mp4` files directly from Pixeldrain, using CRC32 entries vendored in `muhn-pace-sources.json`. When `PREFER_MUHN_PACE` is set, eligible episodes route through the Muhn Pace downloader instead of RSS/torrent; everything else behaves exactly as before. Run `npm run sync-muhn-sources` to refresh the vendored source index.
+
+| Muhn Pace Variables | Default | Description |
+| :--- | :--- | :--- |
+| `PREFER_MUHN_PACE` | `false` | When `true`, eligible episodes use Muhn CRC + Pixeldrain instead of RSS/torrent. |
+| `MUHN_PACE_DOWNLOAD_DIR` | `<downloads>/muhn-pace` | Staging directory for Muhn Pace HTTP downloads. |
+| `MUHN_PACE_SOURCES_PATH` | `./muhn-pace-sources.json` | Path to the vendored Muhn Pace source index JSON. |
+| `MUHN_PACE_FALLBACK_TO_ONE_PACE` | `true` | Fall back to One Pace RSS/torrent when a Muhn episode has no Pixeldrain source. |
+| `MUHN_PACE_MAX_STAGING_FILES` | `5` | Max completed Muhn downloads allowed to sit in staging awaiting import (backpressure). |
+| `MUHN_PACE_DOWNLOAD_INTERVAL` | `TORRENT_CHECK_INTERVAL` | Seconds between Muhn Pace download ticks. |
+| `MUHN_PACE_IMPORT_INTERVAL` | `15` | Seconds between Muhn Pace import ticks. |
+
 ### 🔎 Filters
 
 `PIPELINE_FILTERS_INCLUDE` and `PIPELINE_FILTERS_EXCLUDE` are lists of 'filters' as a comma separated string. For example: `filter1,filter2,filter3`.

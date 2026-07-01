@@ -1,13 +1,13 @@
+import { Logger } from 'ez-ts-logger'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import environment from '../../environment.ts'
-import Logger from '../../util/logger.ts'
 import { LoggerMiddleware } from './logger.middleware.ts'
 
 //Gemini generated, check
 
 // 1. Mock External Dependencies
-vi.mock('../../util/logger.js', () => ({
-	default: {
+vi.mock('ez-ts-logger', () => ({
+	Logger: {
 		error: vi.fn(),
 		warn: vi.fn(),
 		debug: vi.fn(),

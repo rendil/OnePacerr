@@ -77,6 +77,40 @@ export default {
 		Number.parseInt(process.env.PIPELINE_RETRY_INTERVAL || '10') * 1000,
 
 	/**
+	 * MUHN PACE
+	 */
+	PREFER_MUHN_PACE: /true/i.test(process.env.PREFER_MUHN_PACE || 'false'),
+
+	MUHN_PACE_DOWNLOAD_DIR:
+		process.env.MUHN_PACE_DOWNLOAD_DIR ||
+		(process.env.MOUNT_DOWNLOADS_ONEPACERR
+			? `${process.env.MOUNT_DOWNLOADS_ONEPACERR}/muhn-pace`
+			: './muhn-pace-staging'),
+	MUHN_PACE_SOURCES_PATH:
+		process.env.MUHN_PACE_SOURCES_PATH || './muhn-pace-sources.json',
+	MUHN_PACE_MAX_RETRIES: Number.parseInt(
+		process.env.MUHN_PACE_MAX_RETRIES || '5',
+	),
+	MUHN_PACE_RETRY_BASE_DELAY_MS:
+		Number.parseInt(process.env.MUHN_PACE_RETRY_BASE_DELAY_MS || '60') * 1000,
+	MUHN_PACE_RETRY_MAX_DELAY_MS:
+		Number.parseInt(process.env.MUHN_PACE_RETRY_MAX_DELAY_MS || '3600') * 1000,
+	MUHN_PACE_FALLBACK_TO_ONE_PACE: /true/i.test(
+		process.env.MUHN_PACE_FALLBACK_TO_ONE_PACE || 'true',
+	),
+	MUHN_PACE_MAX_STAGING_FILES: Number.parseInt(
+		process.env.MUHN_PACE_MAX_STAGING_FILES || '5',
+	),
+	MUHN_PACE_DOWNLOAD_INTERVAL:
+		Number.parseInt(
+			process.env.MUHN_PACE_DOWNLOAD_INTERVAL ||
+				process.env.TORRENT_CHECK_INTERVAL ||
+				'60',
+		) * 1000,
+	MUHN_PACE_IMPORT_INTERVAL:
+		Number.parseInt(process.env.MUHN_PACE_IMPORT_INTERVAL || '15') * 1000,
+
+	/**
 	 * LIBRARY
 	 */
 	LIBRARY_MEDIA_SERVER: process.env.LIBRARY_MEDIA_SERVER || `plex`,
@@ -98,6 +132,8 @@ export default {
 	LIBRARY_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
 		process.env.LIBRARY_CREATE_SHOW_IF_NOT_FOUND || 'true',
 	),
+	LIBRARY_SCAN_TIMEOUT_MS:
+		Number.parseInt(process.env.LIBRARY_SCAN_TIMEOUT_MS || '120') * 1000,
 
 	/**
 	 * LIBRARY - NONE

@@ -10,7 +10,8 @@
 		"dev": "nodemon --enable-source-maps dist/index.js",
 		"test": "vitest run",
 		"test:dev": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"sync-muhn-sources": "npm run build && node --enable-source-maps dist/muhn-pace/sync-muhn-sources.js"
 	},
 	"author": "eltharynd",
 	"license": "MIT",

@@ -1,0 +1,81 @@
+{
+	"lastUpdate": "2026-07-01",
+	"title": "One Piece",
+	"description": "Test show",
+	"genre": ["Animation"],
+	"mpaa": "TV-14",
+	"customRating": "TV-14",
+	"arcs": [
+		{
+			"arc": 19,
+			"saga": "Water 7",
+			"title": "Enies Lobby",
+			"description": "Enies Lobby arc",
+			"status": "complete",
+			"mangaChapters": "",
+			"mangaChaptersCount": 0,
+			"animeEpisodes": "",
+			"animeEpisodesCount": 0,
+			"fillerEpisodes": "",
+			"paceEpisodesCount": 0,
+			"animeMinutes": 0,
+			"paceMinutes": 0,
+			"savedMinutes": 0,
+			"savedPercentage": 0,
+			"audioLanguages": ["en"],
+			"subLanguages": [],
+			"subLanguagesPixeldrain": [],
+			"resolution": "1080p",
+			"episodes": [
+				{
+					"arc": 19,
+					"episode": 1,
+					"title": "The Law of the Sea",
+					"description": "Test episode description",
+					"mangaChapters": "",
+					"animeEpisodes": "",
+					"released": "",
+					"files": {
+						"standard": {
+							"CRC32": "AAAAAAAA",
+							"hash": "",
+							"magnetURI": "",
+							"duration": 0
+						}
+					}
+				},
+				{
+					"arc": 19,
+					"episode": 2,
+					"title": "The Second Episode",
+					"description": "Test episode 2 description",
+					"mangaChapters": "",
+					"animeEpisodes": "",
+					"released": "",
+					"files": {
+						"standard": {
+							"CRC32": "BBBBBBBB",
+							"hash": "",
+							"magnetURI": "",
+							"duration": 0
+						}
+					}
+				}
+			]
+		}
+	],
+	"other_edits": {
+		"muhn_pace": [
+			{
+				"arc": 19,
+				"episode": 1,
+				"crc32": "CCBFE9BB"
+			},
+			{
+				"arc": 19,
+				"episode": 2,
+				"crc32": "AABBCCDD"
+			}
+		]
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"version": "2026-07-01",
+	"entries": [
+		{
+			"arc": 19,
+			"episode": 1,
+			"album_id": "test-album",
+			"file_id": "test-file-id",
+			"filename": "[Muhn Pace] Enies Lobby - 01.mp4",
+			"size_bytes": 25
+		},
+		{
+			"arc": 19,
+			"episode": 2,
+			"album_id": "test-album",
+			"file_id": "test-file-id-2",
+			"filename": "[Muhn Pace] Enies Lobby - 02.mp4"
+		}
+	]
+}

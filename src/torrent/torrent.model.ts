@@ -5,7 +5,14 @@ export type TorrentClient =
 	| 'utorrent'
 	| 'deluge'
 	| 'transmission'
-export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'
+export type QueueDownloadResult =
+	| 'added'
+	| 'already_present'
+	| 'already_staged'
+	| 'skipped'
+	| 'source_missing'
+	| 'crc_mismatch'
+	| 'download_failed'
 export type Torrent = {
 	readonly hash: string
 	readonly content_path: string

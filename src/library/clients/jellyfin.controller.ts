@@ -4,6 +4,7 @@ import environment from '../../environment.js'
 import { EpisodeMetadata } from '../../metadata/metadata.model.js'
 import { Context } from '../../util/context.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
+import { waitForLibraryScanIdle } from '../library-scan.js'
 import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
@@ -147,32 +148,16 @@ export class JellyfinController implements ILibraryController {
 			await this.jellyfin.startTask(scanTask.Id)
 		}
 
-		await new Promise<void>((resolve, reject) => {
-			const timeoutCallback = () => {
-				clearInterval(pollInterval)
-				Logger.error(
-					`Jellyfin didn't notify folder update before timeout expired...`,
-				)
-				reject()
-			}
-			let timeoutHandler = setTimeout(timeoutCallback, 15000)
-
-			const pollInterval = setInterval(async () => {
+		await waitForLibraryScanIdle({
+			server: 'Jellyfin',
+			timeoutMs: environment.LIBRARY_SCAN_TIMEOUT_MS,
+			getState: async () => {
 				const currentTask = await this.jellyfin.getTask(scanTask.Id)
-
-				if (currentTask.State === 'Idle') {
-					Logger.debug(`Jellyfin notified folder update`)
-					clearTimeout(timeoutHandler)
-					clearInterval(pollInterval)
-					resolve()
-				} else {
-					if (timeoutHandler) clearInterval(timeoutHandler)
-					timeoutHandler = setTimeout(timeoutCallback, 15000)
-					Logger.debug(
-						`Jellyfin Scanning... ${currentTask.CurrentProgressPercentage ?? 0}%`,
-					)
+				return {
+					state: currentTask.State,
+					progress: currentTask.CurrentProgressPercentage,
 				}
-			}, 1000)
+			},
 		})
 
 		if (!this.show) {

@@ -1,6 +1,7 @@
 import { Express } from '../api/express.js'
 import { LibraryController } from '../library/library.controller.js'
 import { MetadataController } from '../metadata/metadata.controller.js'
+import { MuhnPaceController } from '../muhn-pace/muhn-pace.controller.js'
 import { PipelineController } from '../pipeline/pipeline.controller.js'
 import { TorrentController } from '../torrent/torrent.controller.js'
 
@@ -10,6 +11,7 @@ class ContextContainer {
 	metadata: MetadataController
 	pipeline: PipelineController
 	torrent: TorrentController
+	muhnPace?: MuhnPaceController
 }
 
 export const Context = new ContextContainer()

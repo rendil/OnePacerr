@@ -4,6 +4,7 @@ import environment from '../../environment.js'
 import { EpisodeMetadata } from '../../metadata/metadata.model.js'
 import { Context } from '../../util/context.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
+import { waitForLibraryScanIdle } from '../library-scan.js'
 import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
@@ -147,32 +148,16 @@ export class EmbyController implements ILibraryController {
 			await this.emby.startTask(scanTask.Id)
 		}
 
-		await new Promise<void>((resolve, reject) => {
-			const timeoutCallback = () => {
-				clearInterval(pollInterval)
-				Logger.error(
-					`Emby didn't notify folder update before timeout expired...`,
-				)
-				reject()
-			}
-			let timeoutHandler = setTimeout(timeoutCallback, 15000)
-
-			const pollInterval = setInterval(async () => {
+		await waitForLibraryScanIdle({
+			server: 'Emby',
+			timeoutMs: environment.LIBRARY_SCAN_TIMEOUT_MS,
+			getState: async () => {
 				const currentTask = await this.emby.getTask(scanTask.Id)
-
-				if (currentTask.State === 'Idle') {
-					Logger.debug(`Emby notified folder update`)
-					clearTimeout(timeoutHandler)
-					clearInterval(pollInterval)
-					resolve()
-				} else {
-					if (timeoutHandler) clearInterval(timeoutHandler)
-					timeoutHandler = setTimeout(timeoutCallback, 15000)
-					Logger.debug(
-						`Emby Scanning... ${currentTask.CurrentProgressPercentage ?? 0}%`,
-					)
+				return {
+					state: currentTask.State,
+					progress: currentTask.CurrentProgressPercentage,
 				}
-			}, 1000)
+			},
 		})
 
 		if (!this.show) {

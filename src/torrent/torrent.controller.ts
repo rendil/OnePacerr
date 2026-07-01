@@ -172,7 +172,7 @@ export class TorrentController {
 				)
 			} else {
 				Logger.error(`Error processing completed downloads`)
-				Logger.error(e)
+				Logger.error(e instanceof Error ? e.message : e)
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import { Logger } from 'ez-ts-logger'
 import { Express } from './api/express.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
+import { MuhnPaceController } from './muhn-pace/muhn-pace.controller.js'
 import { PipelineController } from './pipeline/pipeline.controller.js'
 import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
@@ -69,6 +70,10 @@ const startApp = async () => {
 		Context.library = new LibraryController()
 		Context.torrent = new TorrentController()
 
+		if (environment.PREFER_MUHN_PACE) {
+			Context.muhnPace = new MuhnPaceController()
+		}
+
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')
 	} catch (e) {
 		Logger.error('APPLICATION COULD NOT BE STARTED...')
@@ -79,6 +84,16 @@ const startApp = async () => {
 	try {
 		await Context.library.init()
 		await Context.metadata.refreshMetadata()
+
+		if (environment.PREFER_MUHN_PACE && Context.muhnPace) {
+			await Context.muhnPace.processStagingDirectory()
+			setInterval(() => {
+				void Context.muhnPace!.processStagingDirectory()
+			}, environment.MUHN_PACE_IMPORT_INTERVAL)
+			setInterval(() => {
+				void Context.muhnPace!.processPendingDownloads()
+			}, environment.MUHN_PACE_DOWNLOAD_INTERVAL)
+		}
 	} catch (e) {
 		if (
 			e instanceof LabelsDisabledInDelugeError ||
